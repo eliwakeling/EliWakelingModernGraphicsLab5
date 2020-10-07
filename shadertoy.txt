@@ -229,7 +229,7 @@ vec3 finalColor(in float diffcoef, in float attinu, in vec3 surfaceColor, in vec
 
 }
 
-vec2 distortion (vec2 pix){
+vec2 distortion(vec2 pix){
     float theta = atan(pix.y, pix.x);
     float radius = length(pix);
     radius *= radius * radius;
@@ -283,9 +283,9 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //float len = length(vp.viewportPoint.xy);
     
     //if (len < 1.0) {
-    //ray.direction = distortion(ray.direction);
-    //loc = ratio * loc + 0.1 * iTime;
-    //} 
+  //  ray.direction = distortion(ray.direction);
+   // loc = ratio * loc + 0.1 * iTime;
+   // } 
     //return texture(iChannel0, loc);
     
     //Effect 3.
@@ -313,12 +313,18 @@ color4 calcColor(in sViewport vp, in sRay ray)
     float rot = 0.1 * iTime;
     
     cubeLoc = rotate(cubeLoc, rot);
-    //return vec4(cubeLoc, 1.0)
+    
+    float len = length(vp.viewportPoint.xy);
+    
+    if (len < 1.0) {
+    //ray.direction = distortion(ray.direction);
+    cubeLoc = ratio * cubeLoc + 0.1 * iTime;
+    } 
     return texture(iChannel1, cubeLoc);
     
-    //Rotation Matrix
-    //cubeLoc = rot * cubeLoc;
-    //return vec4()cubeLoc, 1.0)
+   // Rotation Matrix
+   // cubeLoc = rot * cubeLoc;
+   // return vec4()cubeLoc, 1.0)
     
     //return vp.viewportPoint;
 }
