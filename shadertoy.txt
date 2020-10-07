@@ -3,6 +3,8 @@
 //------------------------------------------------------------
 // TYPE ALIASES & UTILITY FUNCTIONS
 
+//Sources used: https://www.geeks3d.com/20140213/glsl-shader-library-fish-eye-and-dome-and-barrel-distortion-post-processing-filters/2/
+
 // sScalar: alias for a 1D scalar (non-vector)
 #define sScalar float
 
@@ -227,7 +229,22 @@ vec3 finalColor(in float diffcoef, in float attinu, in vec3 surfaceColor, in vec
 
 }
 
+vec2 distortion (vec2 pix){
+    float theta = atan(pix.y, pix.x);
+    float radius = length(pix);
+    radius *= radius * radius;
+    pix.x = radius * cos(theta);
+    pix.y = radius * cos(theta);
+    
+    return 0.5 * (pix + 1.0);
 
+}
+
+vec3 rotate(vec3 ray, float rot){
+ float sinRot = sin(rot);
+ float cosRot = cos(rot);
+ return vec3(cosRot*ray.x + sinRot*ray.z, ray.y, -sinRot*ray.x + cosRot*ray.z);
+}
 
     
 
@@ -253,7 +270,7 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //return vec4(0, 0, 1, 1);
     
     //Effect 1.
-    //float sampledTex = 0.0 + iTime * 0.1;
+    float sampledTex = 0.0 + iTime * 0.1;
     
     
     
@@ -263,21 +280,41 @@ color4 calcColor(in sViewport vp, in sRay ray)
     
     //Effect 2.
     
-     loc = ratio * loc + 0.1 * iTime; // zoom + shift
+    //float len = length(vp.viewportPoint.xy);
     
-     return texture(iChannel0, loc);
+    //if (len < 1.0) {
+    //ray.direction = distortion(ray.direction);
+    //loc = ratio * loc + 0.1 * iTime;
+    //} 
+    //return texture(iChannel0, loc);
     
     //Effect 3.
-    //return vec4(normalize(vec3(vp.viewportPoint.xy, 1.0)),1.0);
+    
+    //vec3 normal = vec3(normalize(vec3(vp.viewportPoint.xy, 1.0)));
+    //vec3 position = vec3(px, 0.0);
+    //pLight light1;
+    //initLight(light1, vec3(-0.3, 0.3, 4.5), vec3(1.0, 1.0, 1.0), 6.0);
+    //float dist = length(position - light1.center.xyz);
+    
+    //float diff;
+    //diff = diffuseCoef(normal, position, light1.center.xyz);
+    //float attinu = attinuation(light1.intensity, dist);
+    //vec3 finalCol = finalColor(diff, attinu, texture(iChannel0, loc), light1.color.xyz );
+    
+    //return vec4(finalCol, 1.0);
+    //return texture(iChannel0, loc);
     
     
     
     //Effect 4
     //CUBEMAP samplerCube:
     
-    //vec3 cubeLoc = ray.direction.xyz;
+    vec3 cubeLoc = ray.direction.xyz;
+    float rot = 0.1 * iTime;
+    
+    cubeLoc = rotate(cubeLoc, rot);
     //return vec4(cubeLoc, 1.0)
-    //return texture(iChannel1, cubeLoc);
+    return texture(iChannel1, cubeLoc);
     
     //Rotation Matrix
     //cubeLoc = rot * cubeLoc;
