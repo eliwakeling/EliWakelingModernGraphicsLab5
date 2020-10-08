@@ -221,7 +221,7 @@ float attinuation (in float intensity, in float dist) {
 
 vec3 finalColor(in float diffcoef, in float attinu, in vec3 surfaceColor, in vec3 lightColor ){
 	
-    //Find the final color of the sphere in lambert.
+    //Find the final color of the object in lambert.
     float diffIntense = diffcoef * attinu;
     vec3 finalCol = diffIntense * surfaceColor * lightColor;
     
@@ -230,9 +230,13 @@ vec3 finalColor(in float diffcoef, in float attinu, in vec3 surfaceColor, in vec
 }
 
 vec2 distortion(vec2 pix){
+    //Create a barrel distortion.
     float theta = atan(pix.y, pix.x);
     float radius = length(pix);
+    //Increase the barrel distortion's power without using the "pow" function.
     radius *= radius * radius;
+    
+    //Apply the distortion.
     pix.x = radius * cos(theta);
     pix.y = radius * cos(theta);
     
@@ -241,6 +245,7 @@ vec2 distortion(vec2 pix){
 }
 
 vec3 rotate(vec3 ray, float rot){
+ //Rotate the cube map on the Y axis.
  float sinRot = sin(rot);
  float cosRot = cos(rot);
  return vec3(cosRot*ray.x + sinRot*ray.z, ray.y, -sinRot*ray.x + cosRot*ray.z);
@@ -264,38 +269,46 @@ color4 calcColor(in sViewport vp, in sRay ray)
     sCoord loc = px / res; // relative to texture (input)
     loc = ratio * loc + 0.1 * iTime; // zoom + shift
     
+    ////Base Texture Return.
     //return texture(iChannel0, loc);
     
     //return vp.viewportPoint;
     //return vec4(0, 0, 1, 1);
     
     //Effect 1.
-    float sampledTex = 0.0 + iTime * 0.1;
     
-    
-    
+    //float sampledTex = 0.0 + iTime * 0.1;
+   
+    ////Merge the two textures.
     //return mix(texture(iChannel0, loc), texture(iChannel2, loc), sampledTex);
     
     
     
     //Effect 2.
     
-    //float len = length(vp.viewportPoint.xy);
+    //Sepparate the undistorted parts of the image from the distorted.
+    float len = length(vp.viewportPoint.xy);
     
-    //if (len < 1.0) {
-  //  ray.direction = distortion(ray.direction);
-   // loc = ratio * loc + 0.1 * iTime;
-   // } 
-    //return texture(iChannel0, loc);
+    //If the pixel is within the distortion zone.
+    if (len < 1.0) {
+    //Run the distortion script.
+    //ray.direction = distortion(ray.direction);
+    loc = ratio * loc + 0.1;
+    } 
+    return texture(iChannel0, loc);
     
     //Effect 3.
     
+    ////Set up the normals, surface positions, etc.
     //vec3 normal = vec3(normalize(vec3(vp.viewportPoint.xy, 1.0)));
     //vec3 position = vec3(px, 0.0);
     //pLight light1;
+    
+    ////Initialize the lights and calculate the distance.
     //initLight(light1, vec3(-0.3, 0.3, 4.5), vec3(1.0, 1.0, 1.0), 6.0);
     //float dist = length(position - light1.center.xyz);
     
+    ////Calculate Lambertian Shading.
     //float diff;
     //diff = diffuseCoef(normal, position, light1.center.xyz);
     //float attinu = attinuation(light1.intensity, dist);
@@ -309,22 +322,23 @@ color4 calcColor(in sViewport vp, in sRay ray)
     //Effect 4
     //CUBEMAP samplerCube:
     
-    vec3 cubeLoc = ray.direction.xyz;
-    float rot = 0.1 * iTime;
+    ////Initialize the cube map.
+    //vec3 cubeLoc = ray.direction.xyz;
+    //float rot = 0.1 * iTime;
     
-    cubeLoc = rotate(cubeLoc, rot);
+    ////Rotate the cube.
+    //cubeLoc = rotate(cubeLoc, rot);
     
-    float len = length(vp.viewportPoint.xy);
+    ////Sepparate the distortion zone from the rest of the image.
+    //float len = length(vp.viewportPoint.xy);
     
-    if (len < 1.0) {
+    ////If the pixel is within the distortion zone.
+    //if (len < 1.0) {
+    ////Distort the image.
     //ray.direction = distortion(ray.direction);
-    cubeLoc = ratio * cubeLoc + 0.1 * iTime;
-    } 
-    return texture(iChannel1, cubeLoc);
-    
-   // Rotation Matrix
-   // cubeLoc = rot * cubeLoc;
-   // return vec4()cubeLoc, 1.0)
+    //cubeLoc = ratio * cubeLoc + 0.1 * iTime;
+    //} 
+    //return texture(iChannel1, cubeLoc);
     
     //return vp.viewportPoint;
 }
